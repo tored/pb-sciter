@@ -1,0 +1,9 @@
+﻿*.pbp
+*.pb.cfg
+*.pbi.cfg
+project.cfg
+
+*.dll
+*.dylib
+*.so
+
