@@ -153,7 +153,7 @@ Prototype SciterLoadFile(*hWndSciter, *filename)
 ; SBOOL SciterLoadHtml(HWINDOW hWndSciter, LPCBYTE html, UINT htmlSize, LPCWSTR baseUrl)
 Prototype SciterLoadHtml(*hWndSciter, html.p-utf8, htmlSize, baseUrl)
 ; VOID SciterSetCallback(HWINDOW hWndSciter, LPSciterHostCallback cb, LPVOID cbParam)
-Prototype SciterSetCallback(*hWndSciter, cb, cbParam)
+Prototype SciterSetCallback(*hWndSciter, cb.SciterHostCallback, *cbParam)
 ; SBOOL SciterSetMasterCSS(LPCBYTE utf8, UINT numBytes)
 Prototype SciterSetMasterCSS(utf8, numBytes);
                                             ; SBOOL SciterAppendMasterCSS(LPCBYTE utf8, UINT numBytes)

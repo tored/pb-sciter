@@ -44,9 +44,9 @@ Macro SciterLoadHtml(hWndSciter, html, baseUrl)
   *sciter\LoadHtml(hWndSciter, html, StringByteLength(html, #PB_UTF8), @baseUrl)
 EndMacro
 
-Procedure SciterSetCallback(*hWndSciter, cb.SciterHostCallback, cbParam)
-  *sciter\SetCallback(*hWndSciter, cb, cbParam)
-EndProcedure
+Macro SciterSetCallback(hWndSciter, cb, cbParam)
+  *sciter\SetCallback(hWndSciter, cb, cbParam)
+EndMacro
 
 Macro SciterSetOption(hWnd, option, value)
   *sciter\SetOption(hWnd, option, value)
