@@ -52,7 +52,7 @@ EndEnumeration
 #SCITER_SCDOM_OPERATION_FAILED  = 5
 #SCITER_SCDOM_OK_NOT_HANDLED    = -1
 
-Enumeration MOUSE_EVENTS
+Enumeration SCITER_MOUSE_EVENTS
   #SCITER_MOUSE_ENTER = 0
   #SCITER_MOUSE_LEAVE
   #SCITER_MOUSE_MOVE
@@ -70,7 +70,7 @@ Enumeration MOUSE_EVENTS
   #SCITER_MOUSE_HIT_TEST = $FFE     ; sent To element, allows To handle elements With non-trivial shapes.
 EndEnumeration
 
-Enumeration MOUSE_BUTTONS
+Enumeration SCITER_MOUSE_BUTTONS
   #SCITER_MAIN_MOUSE_BUTTON = 1     ; aka left button
   #SCITER_PROP_MOUSE_BUTTON = 2     ; aka right button
   #SCITER_MIDDLE_MOUSE_BUTTON = 4
