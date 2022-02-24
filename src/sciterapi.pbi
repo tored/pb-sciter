@@ -9,6 +9,27 @@
 #SCITER_SC_KEYBOARD_REQUEST = $08
 #SCITER_SC_INVALIDATE_RECT = $09
 
+Enumeration SCITER_SC_LOAD_DATA_RETURN_CODES
+  #SCITER_LOAD_OK      = 0  ; do Default loading If Data Not set
+  #SCITER_LOAD_DISCARD = 1  ; discard request completely
+  #SCITER_LOAD_DELAYED = 2  ; Data will be delivered later by the host application.
+                            ; Host application must call SciterDataReadyAsync(,,, requestId) on each LOAD_DELAYED request To avoid memory leaks.
+  #SCITER_LOAD_MYSELF  = 3  ; you Return LOAD_MYSELF result To indicate that your (the host) application took Or will take care about HREQUEST in your code completely.
+                            ; Use sciter-x-request.h[pp] API functions With SCN_LOAD_DATA::requestId handle .
+EndEnumeration
+
+Enumeration SCITER_RESOURCE_TYPE
+  #SCITER_RT_DATA_HTML        = 0
+  #SCITER_RT_DATA_IMAGE       = 1
+  #SCITER_RT_DATA_STYLE       = 2
+  #SCITER_RT_DATA_CURSOR      = 3
+  #SCITER_RT_DATA_SCRIPT      = 4
+  #SCITER_RT_DATA_RAW         = 5
+  #SCITER_RT_DATA_FONT
+  #SCITER_RT_DATA_SOUND                    ; wav bytes
+  #SCITER_RT_DATA_FORCE_DWORD = $ffffffff
+EndEnumeration
+
 Enumeration SCITER_CREATE_WINDOW_FLAGS
   #SCITER_SW_CHILD        = (1 << 0)    ; child window only, If this flag is set all other flags ignored
   #SCITER_SW_TITLEBAR     = (1 << 1)    ; toplevel window, has titlebar
@@ -55,22 +76,60 @@ Enumeration MOUSE_BUTTONS
   #SCITER_MIDDLE_MOUSE_BUTTON = 4
 EndEnumeration
 
-Structure SciterRect
-  left.i
-  top.i
-  right.i
-  bottom.i
+Macro C_UINT
+  l
+EndMacro
+
+Macro C_INT
+  l
+EndMacro
+
+Macro C_SBOOL
+  l
+EndMacro
+
+Structure SciterRect Align #PB_Structure_AlignC
+  left.C_INT
+  top.C_INT
+  right.C_INT
+  bottom.C_INT
 EndStructure
 
-Structure SciterCallbackNotification
-  code.i
-  hwnd.i
+Structure SciterCallbackNotification Align #PB_Structure_AlignC
+  code.C_UINT
+  *hwnd
 EndStructure
+
+Structure SciterScnLoadData Align #PB_Structure_AlignC
+  code.C_UINT               ; [in] UINT one of the codes above.
+  *hwnd                     ; [in] HWINDOW of the window this callback was attached to.
+  *uri                      ; [in] LPCWSTR Zero terminated string, fully qualified uri, for example "http://server/folder/file.ext"
+  *outData                  ; [in,out] LPCBYTE pointer to loaded data to return. if data exists in the cache then this field contain pointer to it
+  outDataSize.C_UINT        ; [in,out] UINT loaded data size to return.
+  dataType.C_UINT           ; [in] UINT SciterResourceType
+  *requestId                ; [in] HREQUEST request handle that can be used with sciter-x-request API
+  *principal                ; HELEMENT
+  *initiator                ; HELEMENT
+EndStructure
+
+Structure SciterScnDataLoaded Align #PB_Structure_AlignC
+  code.C_UINT               ; [in] UINT one of the codes above.
+  *hwnd                     ; [in] HWINDOW of the window this callback was attached to.
+  *uri                      ; [in] LPCWSTR Zero terminated string, fully qualified uri, for example "http://server/folder/file.ext"
+  *Data                     ; [in] LPCBYTE pointer To loaded Data.
+  dataSize.C_UINT           ; [in] UINT loaded data size (in bytes)
+  dataType.C_UINT           ; [in] UINT SciterResourceType
+  status.C_UINT             ; [in] UINT
+                            ;      status = 0 (dataSize == 0) - unknown error.
+                            ;      status = 100..505 - http response status, Note: 200 - OK!
+                            ;      status > 12000 - wininet error code, see ERROR_INTERNET_*** in wininet.h
+EndStructure
+
 
 ; Callback prototypes
 ;
 ; UINT SciterHostCallback(LPSCITER_CALLBACK_NOTIFICATION pns, LPVOID callbackParam)
-Prototype SciterHostCallback(*pns.SciterCallbackNotification, callbackParam)
+Prototype SciterHostCallback(*pns.SciterCallbackNotification, *callbackParam)
 
 
 ; API prototypes
@@ -78,11 +137,11 @@ Prototype SciterHostCallback(*pns.SciterCallbackNotification, callbackParam)
 ; LPCWSTR SciterClassName(void)
 Prototype SciterClassName()
 ; UINT SciterVersion(SBOOL major)
-Prototype SciterVersion(major)
+Prototype SciterVersion(major.C_SBOOL)
 ; SBOOL SciterDataReady(HWINDOW hwnd, LPCWSTR uri, LPCBYTE Data, UINT dataLength)
-Prototype SciterDataReady(*hwnd, uri, Dat, dataLength)
+Prototype SciterDataReady(*hwnd, *uri, *Dat, dataLength.C_UINT)
 ; SBOOL SciterDataReadyAsync(HWINDOW hwnd, LPCWSTR uri, LPCBYTE Data, UINT dataLength, LPVOID requestId)
-Prototype SciterDataReadyAsync(*hwnd, uri, Dat, dataLength, requestId)
+Prototype SciterDataReadyAsync(*hwnd, *uri, *Dat, dataLength.C_UINT, *requestId)
 CompilerIf #PB_Compiler_OS = #PB_OS_Windows
   ; LRESULT SciterProc(HWINDOW hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
   Prototype SciterProc(*hwnd, msg, wParam, lParam)
@@ -452,8 +511,8 @@ Prototype SciterNodeWrap(pval, pNode)
 Prototype SciterReleaseGlobalAsset(pass)
 
 
-Structure Sciter
-  ver.i
+Structure Sciter Align #PB_Structure_AlignC
+  ver.C_UINT
   ClassName.SciterClassName
   Version.SciterVersion
   DataReady.SciterDataReady
@@ -462,8 +521,8 @@ Structure Sciter
     Proc.SciterProc
     ProcND.SciterProcND
   CompilerElse
-    Proc.i
-    ProcND.i
+    *Proc
+    *ProcND
   CompilerEndIf
   LoadFile.SciterLoadFile
   LoadHtml.SciterLoadHtml
@@ -481,7 +540,7 @@ Structure Sciter
   CompilerIf #PB_Compiler_OS = #PB_OS_Windows
     TranslateMessage.SciterTranslateMessage
   CompilerElse
-    TranslateMessage.i
+    *TranslateMessage
   CompilerEndIf
   SetOption.SciterSetOption
   GetPPI.SciterGetPPI
@@ -491,21 +550,21 @@ Structure Sciter
     D2DFactory.SciterD2DFactory
     DWFactory.SciterDWFactory
   CompilerElse
-    RenderD2D.i
-    D2DFactory.i
-    DWFactory.i
+    *RenderD2D
+    *D2DFactory
+    *DWFactory
   CompilerEndIf
   GraphicsCaps.SciterGraphicsCaps
   SetHomeURL.SciterSetHomeURL
   CompilerIf #PB_Compiler_OS = #PB_OS_MacOS
     CreateNSView.SciterCreateNSView
   CompilerElse
-    CreateNSView.i
+    *CreateNSView
   CompilerEndIf
   CompilerIf #PB_Compiler_OS = #PB_OS_Linux
     CreateWidget.SciterCreateWidget
   CompilerElse
-    CreateWidget.i
+    *CreateWidget
   CompilerEndIf
   CreateWindow.SciterCreateWindow
   SetupDebugOutput.SciterSetupDebugOutput
@@ -632,10 +691,10 @@ Structure Sciter
   ValueInvoke.SciterValueInvoke
   ValueNativeFunctorSet.SciterValueNativeFunctorSet
   ValueIsNativeFunctor.SciterValueIsNativeFunctor
-  reserved1.i
-  reserved2.i
-  reserved3.i
-  reserved4.i
+  *reserved1
+  *reserved2
+  *reserved3
+  *reserved4
   OpenArchive.SciterOpenArchive
   GetArchiveItem.SciterGetArchiveItem
   CloseArchive.SciterCloseArchive
@@ -649,17 +708,17 @@ Structure Sciter
     RenderOnDirectXWindow.SciterRenderOnDirectXWindow
     RenderOnDirectXTexture.SciterRenderOnDirectXTexture
   CompilerElse
-    CreateOnDirectXWindow.i
-    RenderOnDirectXWindow.i
-    RenderOnDirectXTexture.i
+    *CreateOnDirectXWindow
+    *RenderOnDirectXWindow
+    *RenderOnDirectXTexture
   CompilerEndIf
   ProcX.SciterProcX
   AtomValue.SciterAtomValue
   AtomNameCB.SciterAtomNameCB
   SetGlobalAsset.SciterSetGlobalAsset
   GetElementAsset.SciterGetElementAsset
-  SetVariable.i
-  GetVariable.i
+  *SetVariable
+  *GetVariable
   ElementUnwrap.SciterElementUnwrap
   ElementWrap.SciterElementWrap
   NodeUnwrap.SciterNodeUnwrap

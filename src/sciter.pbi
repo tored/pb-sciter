@@ -23,6 +23,15 @@ Procedure SciterFree()
   CloseLibrary(sciterLibrary)
 EndProcedure
 
+
+Macro SciterDataReady(hwnd, uri, Dat, dataLength)
+  *sciter\DataReady(hwnd, uri, Dat, dataLength)
+EndMacro
+
+Macro SciterDataReadyAsync(hwnd, uri, Dat, dataLength, requestId)
+  *sciter\DataReadyAsync(hwnd, uri, Dat, dataLength, requestId)
+EndMacro
+
 Macro SciterProcND(hwnd, msg, wParam, lParam, handled)
   *sciter\ProcND(hwnd, msg, wParam, lParam, handled)
 EndMacro
