@@ -52,6 +52,64 @@ EndEnumeration
 #SCITER_SCDOM_OPERATION_FAILED  = 5
 #SCITER_SCDOM_OK_NOT_HANDLED    = -1
 
+Enumeration SCITER_VALUE_RESULT
+  #SCITER_HV_OK_TRUE = -1
+  #SCITER_HV_OK = 0
+  #SCITER_HV_BAD_PARAMETER = 1
+  #SCITER_HV_INCOMPATIBLE_TYPE = 2
+EndEnumeration
+
+Enumeration SCITER_VALUE_TYPE
+  #SCITER_T_UNDEFINED  = 0
+  #SCITER_T_NULL       = 1
+  #SCITER_T_BOOL       = 2
+  #SCITER_T_INT        = 3
+  #SCITER_T_FLOAT      = 4
+  #SCITER_T_STRING     = 5
+  #SCITER_T_DATE       = 6   ; INT64 - contains a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC), a.k.a. FILETIME on Windows
+  #SCITER_T_CURRENCY   = 7   ; INT64 - 14.4 fixed number. E.g. dollars = int64 / 10000;
+  #SCITER_T_LENGTH     = 8   ; length units, value is int Or float, units are VALUE_UNIT_TYPE
+  #SCITER_T_ARRAY      = 9
+  #SCITER_T_MAP        = 10
+  #SCITER_T_FUNCTION   = 11  ; named tuple , like Array but With name tag
+  #SCITER_T_BYTES      = 12  ; sequence of bytes - e.g. image Data
+  #SCITER_T_OBJECT     = 13  ; scripting object proxy (TISCRIPT/SCITER)
+                             ; #SCITER_T_DOM_OBJECT = 14,  ; DOM object, use get_object_data To get HELEMENT
+  #SCITER_T_RESOURCE   = 15  ; 15 - other thing derived from tool::resource
+                             ; #SCITER_T_RANGE      = 16  ; 16 - N..M, integer range.
+  #SCITER_T_DURATION   = 17  ; double, seconds
+  #SCITER_T_ANGLE      = 18  ; double, radians
+  #SCITER_T_COLOR      = 19  ; [unsigned] INT, ABGR
+  #SCITER_T_ASSET      = 21  ; sciter::om::iasset* add_ref'ed pointer
+EndEnumeration
+
+Enumeration SCITER_VALUE_UNIT_TYPE
+  #SCITER_UT_EM             = 1   ; height of the element's font.
+  #SCITER_UT_EX             = 2   ; height of letter 'x'
+  #SCITER_UT_PR             = 3   ; %
+  #SCITER_UT_SP             = 4   ; %% "springs", a.k.a. flex units
+  #SCITER_UT_reserved1      = 5
+  #SCITER_UT_reserved2      = 6
+  #SCITER_UT_PX             = 7   ; pixels
+  #SCITER_UT_IN             = 8   ; inches (1 inch = 2.54 centimeters).
+  #SCITER_UT_CM             = 9   ; centimeters.
+  #SCITER_UT_MM             = 10  ; millimeters.
+  #SCITER_UT_PT             = 11  ; points (1 point = 1/72 inches).
+  #SCITER_UT_PC             = 12  ; picas (1 pica = 12 points).
+  #SCITER_UT_DIP            = 13
+  #SCITER_UT_reserved3      = 14
+  #SCITER_UT_reserved4      = 15
+  #SCITER_UT_PR_WIDTH       = 16  ; width(n%)
+  #SCITER_UT_PR_HEIGHT      = 17  ; height(n%)
+  #SCITER_UT_PR_VIEW_WIDTH  = 18  ; vw
+  #SCITER_UT_PR_VIEW_HEIGHT = 19  ; vh
+  #SCITER_UT_PR_VIEW_MIN    = 20  ; vmin
+  #SCITER_UT_PR_VIEW_MAX    = 21  ; vmax
+  #SCITER_UT_REM            = 22  ; root em
+  #SCITER_UT_PPX            = 23  ; physical px
+  #SCITER_UT_CH             = 24  ; width of '0'
+EndEnumeration
+
 Enumeration SCITER_MOUSE_EVENTS
   #SCITER_MOUSE_ENTER = 0
   #SCITER_MOUSE_LEAVE
@@ -78,6 +136,10 @@ EndEnumeration
 
 Macro C_UINT
   l
+EndMacro
+
+Macro C_UINT64
+  q
 EndMacro
 
 Macro C_INT
@@ -125,12 +187,20 @@ Structure SciterScnDataLoaded Align #PB_Structure_AlignC
                             ;      status > 12000 - wininet error code, see ERROR_INTERNET_*** in wininet.h
 EndStructure
 
+Structure SciterValue Align #PB_Structure_AlignC
+  t.C_UINT
+  u.C_UINT
+  d.C_UINT64
+EndStructure
 
 ; Callback prototypes
 ;
 ; UINT SciterHostCallback(LPSCITER_CALLBACK_NOTIFICATION pns, LPVOID callbackParam)
-Prototype SciterHostCallback(*pns.SciterCallbackNotification, *callbackParam)
-
+Prototype.C_UINT SciterHostCallback(*pns.SciterCallbackNotification, *callbackParam)
+; VOID NATIVE_FUNCTOR_INVOKE(VOID* tag, UINT argc, const VALUE* argv, VALUE* retval); // retval may contain error definition
+Prototype SciterNativeFunctorInvoke(*tag, argc.C_UINT, *argv, *retval)
+; VOID NATIVE_FUNCTOR_RELEASE(VOID* tag);
+Prototype SciterNativeFunctorRelease(*tag)
 
 ; API prototypes
 ;
@@ -168,7 +238,7 @@ Prototype SciterSetMediaVars(*hWndSciter, *mediaVars)
 Prototype SciterGetMinWidth(*hWndSciter)
 ; UINT SciterGetMinHeight(HWINDOW hWndSciter, UINT width)
 Prototype SciterGetMinHeight(*hWndSciter, width);
-                                               ; SBOOL SciterCall(HWINDOW hWnd, LPCSTR functionName, UINT argc, const SCITER_VALUE* argv, SCITER_VALUE* retval)
+; SBOOL SciterCall(HWINDOW hWnd, LPCSTR functionName, UINT argc, const SCITER_VALUE* argv, SCITER_VALUE* retval)
 Prototype SciterCall(*hWnd, functionName, argc, argv, retval)
 ; SBOOL SciterEval(HWINDOW hwnd, LPCWSTR script, UINT scriptLength, SCITER_VALUE* pretval)
 Prototype SciterEval(*hwnd, script, scriptLength, pretval)
@@ -361,7 +431,7 @@ Prototype SciterAttachHwndToElement(he, *hwnd)
 Prototype SciterControlGetType(he, *pType)
 ; SCDOM_RESULT SciterGetValue(HELEMENT he, VALUE* pval)
 Prototype SciterGetValue(he, pval);
-                                  ; SCDOM_RESULT SciterSetValue(HELEMENT he, const VALUE* pval)
+; SCDOM_RESULT SciterSetValue(HELEMENT he, const VALUE* pval)
 Prototype SciterSetValue(he, pval)
 ; SCDOM_RESULT SciterGetExpando(HELEMENT he, VALUE* pval, SBOOL forceCreation)
 Prototype SciterGetExpando(he, pval, forceCreation)
@@ -410,61 +480,61 @@ Prototype SciterCreateTextNode(text, textLength, phnode)
 ; SCDOM_RESULT SciterCreateCommentNode(LPCWSTR text, UINT textLength, HNODE* phnode)
 Prototype SciterCreateCommentNode(text, textLength, phnode)
 ; UINT ValueInit(VALUE* pval)
-Prototype SciterValueInit(pval)
+Prototype SciterValueInit(*pval.SciterValue)
 ; UINT ValueClear(VALUE* pval)
-Prototype SciterValueClear(pval)
+Prototype SciterValueClear(*pval.SciterValue)
 ; UINT ValueCompare(const VALUE* pval1, const VALUE* pval2)
-Prototype SciterValueCompare(pval1, pval2)
+Prototype SciterValueCompare(*pval1.SciterValue, *pval2.SciterValue)
 ; UINT ValueCopy(VALUE* pdst, const VALUE* psrc)
-Prototype SciterValueCopy(pdst, psrc)
+Prototype SciterValueCopy(*pdst.SciterValue, *psrc.SciterValue)
 ; UINT ValueIsolate(VALUE* pdst)
-Prototype SciterValueIsolate(pdst)
+Prototype SciterValueIsolate(*pdst.SciterValue)
 ; UINT ValueType(const VALUE* pval, UINT* pType, UINT* pUnits)
-Prototype SciterValueType(pval, pType, pUnits)
+Prototype SciterValueType(*pval.SciterValue, pType, pUnits)
 ; UINT ValueStringData(const VALUE* pval, LPCWSTR* pChars, UINT* pNumChars)
-Prototype SciterValueStringData(pval, pChars, pNumChars)
+Prototype SciterValueStringData(*pval.SciterValue, pChars, pNumChars)
 ; UINT ValueStringDataSet(VALUE* pval, LPCWSTR chars, UINT numChars, UINT units)
-Prototype SciterValueStringDataSet(pval, chars, numChars, units)
+Prototype SciterValueStringDataSet(*pval.SciterValue, chars, numChars, units)
 ; UINT ValueIntData(const VALUE* pval, INT* pData)
-Prototype SciterValueIntData(pval, pData)
+Prototype SciterValueIntData(*pval.SciterValue, pData)
 ; UINT ValueIntDataSet(VALUE* pval, INT Data, UINT type, UINT units)
-Prototype SciterValueIntDataSet(pval, Dat, type, units)
+Prototype SciterValueIntDataSet(*pval.SciterValue, Dat.C_INT, type.C_UINT, units.C_UINT)
 ; UINT ValueInt64Data(const VALUE* pval, INT64* pData)
-Prototype SciterValueInt64Data(pval, pData)
+Prototype SciterValueInt64Data(*pval.SciterValue, pData)
 ; UINT ValueInt64DataSet(VALUE* pval, INT64 data, UINT type, UINT units)
-Prototype SciterValueInt64DataSet(pval, Dat, type, units)
+Prototype SciterValueInt64DataSet(*pval.SciterValue, Dat, type, units)
 ; UINT ValueFloatData(const VALUE* pval, FLOAT_VALUE* pData)
-Prototype SciterValueFloatData(pval, pData)
+Prototype SciterValueFloatData(*pval.SciterValue, pData)
 ; UINT ValueFloatDataSet(VALUE* pval, FLOAT_VALUE Data, UINT type, UINT units)
-Prototype SciterValueFloatDataSet(pval, Dat, type, units)
+Prototype SciterValueFloatDataSet(*pval.SciterValue, Dat, type, units)
 ; UINT ValueBinaryData(const VALUE* pval, LPCBYTE* pBytes, UINT* pnBytes)
-Prototype SciterValueBinaryData(pval, pBytes, pnBytes)
+Prototype SciterValueBinaryData(*pval.SciterValue, pBytes, pnBytes)
 ; UINT ValueBinaryDataSet(VALUE* pval, LPCBYTE pBytes, UINT nBytes, UINT type, UINT units)
-Prototype SciterValueBinaryDataSet(pval, pBytes, nBytes, type, units)
+Prototype SciterValueBinaryDataSet(*pval.SciterValue, pBytes, nBytes, type, units)
 ; UINT ValueElementsCount(const VALUE* pval, INT* pn)
-Prototype SciterValueElementsCount(pval, pn)
+Prototype SciterValueElementsCount(*pval.SciterValue, pn)
 ; UINT ValueNthElementValue(const VALUE* pval, INT n, VALUE* pretval)
-Prototype SciterValueNthElementValue(pval, n, pretval)
+Prototype SciterValueNthElementValue(*pval.SciterValue, n, pretval)
 ; UINT ValueNthElementValueSet(VALUE* pval, INT n, const VALUE* pval_to_set)
-Prototype SciterValueNthElementValueSet(pval, n, pval_to_set)
+Prototype SciterValueNthElementValueSet(*pval.SciterValue, n, pval_to_set)
 ; UINT ValueNthElementKey(const VALUE* pval, INT n, VALUE* pretval)
-Prototype SciterValueNthElementKey(pval, n, pretval)
+Prototype SciterValueNthElementKey(*pval.SciterValue, n, pretval)
 ; UINT ValueEnumElements(const VALUE* pval, KeyValueCallback* penum, LPVOID param)
-Prototype SciterValueEnumElements(pval, penum, param)
+Prototype SciterValueEnumElements(*pval.SciterValue, penum, param)
 ; UINT ValueSetValueToKey(VALUE* pval, const VALUE* pkey, const VALUE* pval_to_set)
-Prototype SciterValueSetValueToKey(pval, pkey, pval_to_set)
+Prototype SciterValueSetValueToKey(*pval.SciterValue, pkey, pval_to_set)
 ; UINT ValueGetValueOfKey(const VALUE* pval, const VALUE* pkey, VALUE* pretval)
 Prototype SciterValueGetValueOfKey(pval, pkey, pretval)
 ; UINT ValueToString(VALUE* pval, /*VALUE_STRING_CVT_TYPE*/ UINT how)
-Prototype SciterValueToString(pval, how)
+Prototype SciterValueToString(*pval.SciterValue, how)
 ; UINT ValueFromString(VALUE* pval, LPCWSTR str, UINT strLength, /*VALUE_STRING_CVT_TYPE*/ UINT how)
-Prototype SciterValueFromString(pval, str, strLength, how)
+Prototype SciterValueFromString(*pval.SciterValue, str, strLength, how)
 ; UINT ValueInvoke(const VALUE* pval, VALUE* pthis, UINT argc, const VALUE* argv, VALUE* pretval, LPCWSTR url)
-Prototype SciterValueInvoke(pval, pthis, argc, argv, pretval, url)
+Prototype SciterValueInvoke(*pval.SciterValue, pthis, argc, argv, pretval, url)
 ; UINT ValueNativeFunctorSet(VALUE* pval, NATIVE_FUNCTOR_INVOKE* pinvoke, NATIVE_FUNCTOR_RELEASE* prelease, VOID* tag)
-Prototype SciterValueNativeFunctorSet(pval, pinvoke, prelease, tag)
+Prototype.C_UINT SciterValueNativeFunctorSet(*pval.SciterValue, pinvoke.SciterNativeFunctorInvoke, prelease.SciterNativeFunctorRelease, *tag)
 ; SBOOL ValueIsNativeFunctor(const VALUE* pval)
-Prototype SciterValueIsNativeFunctor(pval)
+Prototype.C_SBOOL SciterValueIsNativeFunctor(*pval.SciterValue)
 ; HSARCHIVE SciterOpenArchive(LPCBYTE archiveData, UINT archiveDataLength)
 Prototype SciterOpenArchive(archiveData, archiveDataLength)
 ; SBOOL SciterGetArchiveItem(HSARCHIVE harc, LPCWSTR path, LPCBYTE* pdata, UINT* pdataLength)
@@ -499,6 +569,10 @@ Prototype SciterAtomNameCB(atomv, rcv, rcv_param)
 Prototype SciterSetGlobalAsset(pass)
 ; SCDOM_RESULT SciterGetElementAsset(HELEMENT el, UINT64 nameAtom, som_asset_t** ppass)
 Prototype SciterGetElementAsset(el, nameAtom, ppass)
+;UINT SciterSetVariable(HWINDOW hwndOrNull, LPCSTR name, const VALUE* pvalToSet);
+Prototype.C_UINT SciterSetVariable(*hwndOrNull, *name, *pvalToSet.SciterValue)
+;UINT SciterGetVariable)(HWINDOW hwndOrNull, LPCSTR name, VALUE* pvalToGet);
+Prototype.C_UINT SciterGetVariable(*hwndOrNull, *name.p-utf8, *pvalToGet.SciterValue);
 ; UINT SciterElementUnwrap(const VALUE* pval, HELEMENT* ppElement)
 Prototype SciterElementUnwrap(pval, ppElement)
 ; UINT SciterElementWrap(VALUE* pval, HELEMENT pElement)
@@ -509,6 +583,7 @@ Prototype SciterNodeUnwrap(pval, ppNode)
 Prototype SciterNodeWrap(pval, pNode)
 ; SBOOL SciterReleaseGlobalAsset(som_asset_t* pass)
 Prototype SciterReleaseGlobalAsset(pass)
+
 
 
 Structure Sciter Align #PB_Structure_AlignC
@@ -717,8 +792,8 @@ Structure Sciter Align #PB_Structure_AlignC
   AtomNameCB.SciterAtomNameCB
   SetGlobalAsset.SciterSetGlobalAsset
   GetElementAsset.SciterGetElementAsset
-  *SetVariable
-  *GetVariable
+  SetVariable.SciterSetVariable
+  GetVariable.SciterGetVariable
   ElementUnwrap.SciterElementUnwrap
   ElementWrap.SciterElementWrap
   NodeUnwrap.SciterNodeUnwrap
