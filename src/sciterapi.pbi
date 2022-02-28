@@ -310,6 +310,8 @@ Prototype SciterGetAttributeCount(he, p_count)
 Prototype SciterGetNthAttributeNameCB(he, n, rcv, rcv_param)
 ; SCDOM_RESULT SciterGetNthAttributeValueCB(HELEMENT he, UINT n, LPCWSTR_RECEIVER* rcv, LPVOID rcv_param)
 Prototype SciterGetNthAttributeValueCB(he, n, rcv, rcv_param)
+;SCDOM_RESULT SciterGetAttributeByNameCB(HELEMENT he, LPCSTR name, LPCWSTR_RECEIVER* rcv, LPVOID rcv_param)
+Prototype SciterGetAttributeByNameCB(he, name, rcv, rcv_param)
 ; SCDOM_RESULT SciterSetAttributeByName(HELEMENT he, LPCSTR name, LPCWSTR value)
 Prototype SciterSetAttributeByName(he, name, value)
 ; SCDOM_RESULT SciterClearAttributes(HELEMENT he)
@@ -657,6 +659,7 @@ Structure Sciter Align #PB_Structure_AlignC
   GetAttributeCount.SciterGetAttributeCount
   GetNthAttributeNameCB.SciterGetNthAttributeNameCB
   GetNthAttributeValueCB.SciterGetNthAttributeValueCB
+  GetAttributeByNameCB.SciterGetAttributeByNameCB
   SetAttributeByName.SciterSetAttributeByName
   ClearAttributes.SciterClearAttributes
   GetElementIndex.SciterGetElementIndex
