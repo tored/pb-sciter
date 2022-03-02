@@ -68,6 +68,10 @@ CompilerIf #PB_Compiler_OS = #PB_OS_Linux
   EndMacro
 CompilerEndIf
 
+Macro SciterSetupDebugOutput(hwndOrNull, param, pfOutput)
+  *sciter\SetupDebugOutput(hwndOrNull, param, pfOutput)
+EndMacro
+
 Macro SciterValueInit(pval)
   *sciter\ValueInit(pval)
 EndMacro

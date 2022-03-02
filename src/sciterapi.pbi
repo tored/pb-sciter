@@ -18,6 +18,19 @@ Enumeration SCITER_SC_LOAD_DATA_RETURN_CODES
                             ; Use sciter-x-request.h[pp] API functions With SCN_LOAD_DATA::requestId handle .
 EndEnumeration
 
+Enumeration SCITER_OUTPUT_SUBSYTEMS
+  #SCITER_OT_DOM = 0       ; html parser & Runtime
+  #SCITER_OT_CSSS          ; csss! parser & Runtime
+  #SCITER_OT_CSS           ; css parser
+  #SCITER_OT_TIS           ; TIS parser & Runtime
+EndEnumeration
+
+Enumeration SCITER_OUTPUT_SEVERITY
+  #SCITER_OS_INFO
+  #SCITER_OS_WARNING
+  #SCITER_OS_ERROR
+EndEnumeration
+
 Enumeration SCITER_RESOURCE_TYPE
   #SCITER_RT_DATA_HTML        = 0
   #SCITER_RT_DATA_IMAGE       = 1
@@ -197,6 +210,8 @@ EndStructure
 ;
 ; UINT SciterHostCallback(LPSCITER_CALLBACK_NOTIFICATION pns, LPVOID callbackParam)
 Prototype.C_UINT SciterHostCallback(*pns.SciterCallbackNotification, *callbackParam)
+; VOID DEBUG_OUTPUT_PROC(LPVOID param, UINT subsystem /*OUTPUT_SUBSYTEMS*/, UINT severity, LPCWSTR text, UINT text_length)
+Prototype SciterDebugOutputProc(*param, subsystem.C_UINT, severity.C_UINT, *text, text_length.C_UINT)
 ; VOID NATIVE_FUNCTOR_INVOKE(VOID* tag, UINT argc, const VALUE* argv, VALUE* retval); // retval may contain error definition
 Prototype SciterNativeFunctorInvoke(*tag, argc.C_UINT, *argv, *retval)
 ; VOID NATIVE_FUNCTOR_RELEASE(VOID* tag);
@@ -281,7 +296,7 @@ Prototype SciterCreateWindow(creationFlags, frame, delegate, delegateParam, pare
 ;         LPVOID                param,      // param To be passed "as is" To the pfOutput
 ;         DEBUG_OUTPUT_PROC     pfOutput    // output function, output stream alike thing.
 ;      )
-Prototype SciterSetupDebugOutput(hwndOrNull, param, pfOutput)
+Prototype SciterSetupDebugOutput(*hwndOrNull, *param, pfOutput.SciterDebugOutputProc)
 ; SCDOM_RESULT Sciter_UseElement(HELEMENT he)
 Prototype Sciter_UseElement(he)
 ; SCDOM_RESULT Sciter_UnuseElement(HELEMENT he)
