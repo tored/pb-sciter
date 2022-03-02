@@ -65,7 +65,10 @@ CompilerIf #PB_Compiler_OS = #PB_OS_Windows
   SetWindowCallback(@WindowCallback())
 CompilerEndIf
 
-#WINDOW_FLAGS = #PB_Window_SizeGadget | #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget
+#WINDOW_FLAGS = #PB_Window_SizeGadget     |
+                #PB_Window_SystemMenu     |
+                #PB_Window_MinimizeGadget |
+                #PB_Window_MaximizeGadget
 Define window = OpenWindow(#PB_Any, 40, 40, 530, 580, "Sciter", #WINDOW_FLAGS)
 If Not window
   Debug "Failed opening window"
