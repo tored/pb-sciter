@@ -1,5 +1,5 @@
 # pb-sciter
-PureBasic bindings for Sciter
+[PureBasic](https://www.purebasic.com/) bindings for [Sciter](https://sciter.com/)
 
 ## Support
 
@@ -299,4 +299,4 @@ Make sure your PureBasic IDE does *not* store [settings within the source file](
 ## License
 
 pb-sciter is released under the BSD 3-Clause License, see the bundled file LICENSE.
-BSD 3-Clause License is the same license used by the `sdk-js-sciter` project.
+BSD 3-Clause License is the same license used by the [sdk-js-sciter](https://github.com/c-smile/sciter-js-sdk) project.
