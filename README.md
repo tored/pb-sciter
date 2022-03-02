@@ -248,7 +248,15 @@ ForEver
     <title>Example</title>
     <script src="example.js"></script>
     <script>
-    document.on("DOMContentLoaded", function() {
+    // reload view on shortcut key F5
+    window.document.on("keyup", function(event) {
+        if (event.code === "F5") {
+            Window.this.load(location.href);
+            return true
+        }
+    });
+
+    window.document.on("DOMContentLoaded", function() {
         renderHelloWorld();
     });
     </script>
