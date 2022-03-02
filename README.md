@@ -45,6 +45,12 @@ EndIf
 ; Attach to inspector, only works on Windows at the moment
 SciterSetOption(#Null, #SCITER_SET_DEBUG_MODE, #True)
 
+; Output any messages from sciter to Debug
+Procedure DebugOutPut(*param, subsystem.C_UINT, severity.C_UINT, *text, text_length.C_UINT)
+  Debug PeekS(*text, text_length)
+EndProcedure
+SciterSetupDebugOutput(#Null, #Null, @DebugOutPut())
+
 CompilerIf #PB_Compiler_OS = #PB_OS_Windows
   Procedure WindowCallback(hwnd, msg, wParam, lParam)
     Protected result
@@ -88,7 +94,7 @@ Procedure.s HelloWorld(name.s)
 EndProcedure
 
 ; Invokes HelloWorld()
-Procedure InvokeHelloWorld(*tag, argc.C_UINT, *argv, *retval)
+Procedure InvokeHelloWorld(*tag, argc.C_UINT, *argv, *retval.SciterValue)
   Protected *value.SciterValue, *buffer, len.C_UINT, str.s
   *value = *argv
   SciterValueStringData(*value, @*buffer, @len)
