@@ -23,6 +23,10 @@ Procedure SciterFree()
   CloseLibrary(sciterLibrary)
 EndProcedure
 
+Macro SciterStringToAscii(in, out)
+  out = Space(Len(in) / SizeOf(Character) + 1)
+  PokeS(@out, in, #PB_Default, #PB_Ascii)
+EndMacro
 
 Macro SciterDataReady(hwnd, uri, Dat, dataLength)
   *sciter\DataReady(hwnd, uri, Dat, dataLength)
@@ -63,3 +67,37 @@ CompilerIf #PB_Compiler_OS = #PB_OS_Linux
     *sciter\CreateWidget(frame)
   EndMacro
 CompilerEndIf
+
+Macro SciterValueInit(pval)
+  *sciter\ValueInit(pval)
+EndMacro
+
+Macro SciterValueStringData(pval, pChars, pNumChars)
+  *sciter\ValueStringData(pval, pChars, pNumChars)
+EndMacro
+
+Macro SciterValueStringDataSet(pval, chars, units)
+  *sciter\ValueStringDataSet(pval, chars, StringByteLength(chars, #PB_UTF8), units)
+EndMacro
+
+Macro SciterValueIntData(pval, pData)
+  *sciter\ValueIntData(pval, pData)
+EndMacro
+
+Macro SciterValueIntDataSet(pval, Dat, type, units)
+  *sciter\ValueIntDataSet(pval, Dat, type, units)
+EndMacro
+
+Macro SciterValueSetValueToKey(pval, pkey, pval_to_set)
+  *sciter\ValueSetValueToKey(pval, pkey, pval_to_set)
+EndMacro
+
+Macro SciterValueNativeFunctorSet(pval, pinvoke, prelease, tag)
+  *sciter\ValueNativeFunctorSet(pval, pinvoke, prelease, tag)
+EndMacro
+
+Procedure SciterSetVariable(*hwndOrNull, name.s, *pvalToSet.SciterValue)
+  Protected str.s
+  SciterStringToAscii(name, str)
+  *sciter\SetVariable(*hwndOrNull, @str, *pvalToSet)
+EndProcedure
