@@ -21,7 +21,7 @@ your own event loop for each platform.
 ### Example
 
 `example.pb`
-```
+```PureBasic
 EnableExplicit
 
 IncludeFile "src/sciter.pbi"
@@ -244,7 +244,7 @@ ForEver
 ```
 
 `example.html`
-```
+```HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -272,14 +272,14 @@ ForEver
 </html>
 ```
 `example.js`
-```
+```JavaScript
 function renderHelloWorld() {
     document.querySelector("h1").innerText = app.helloWorld("World");
 }
 ```
 
 `example.svg`
-```
+```SVG
 <!-- CC0 license -->
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
