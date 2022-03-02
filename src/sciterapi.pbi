@@ -213,7 +213,7 @@ Prototype.C_UINT SciterHostCallback(*pns.SciterCallbackNotification, *callbackPa
 ; VOID DEBUG_OUTPUT_PROC(LPVOID param, UINT subsystem /*OUTPUT_SUBSYTEMS*/, UINT severity, LPCWSTR text, UINT text_length)
 Prototype SciterDebugOutputProc(*param, subsystem.C_UINT, severity.C_UINT, *text, text_length.C_UINT)
 ; VOID NATIVE_FUNCTOR_INVOKE(VOID* tag, UINT argc, const VALUE* argv, VALUE* retval); // retval may contain error definition
-Prototype SciterNativeFunctorInvoke(*tag, argc.C_UINT, *argv, *retval)
+Prototype SciterNativeFunctorInvoke(*tag, argc.C_UINT, *argv, *retval.SciterValue)
 ; VOID NATIVE_FUNCTOR_RELEASE(VOID* tag);
 Prototype SciterNativeFunctorRelease(*tag)
 
